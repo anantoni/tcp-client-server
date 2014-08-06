@@ -7,8 +7,12 @@
 #include <unistd.h> /* fork */
 #include <stdlib.h> /* exit */
 #include <iostream>
-#include "server_options.h"
-#include "connection.h"
+#include "server_options.hpp"
+#include "connection.hpp"
+#include "request_handler.hpp"
+#include "task_queue.hpp"
+
+TaskQueue* task_queue;
 
 int main(int argc, char** argv) {
     int port, sock, newsock, queue_size, pool_size;
@@ -16,12 +20,13 @@ int main(int argc, char** argv) {
     socklen_t clientlen;
     struct sockaddr *serverptr = (struct sockaddr *) &server;
     struct sockaddr *clientptr = (struct sockaddr *) &client;
-    struct hostent *rem;
 
     std::vector<int> argsVector = parse_options(argc, argv);
     port = argsVector.at(0);
     pool_size = argsVector.at(1);
     queue_size = argsVector.at(2);
+
+    task_queue = new TaskQueue(queue_size);
 
     /* Create socket */
     if ((sock = socket(PF_INET, SOCK_STREAM, 0) ) < 0) {
@@ -29,6 +34,7 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
+    std::cout << "socket: " << sock << std::endl;
     server.sin_family = AF_INET; /* Internet domain */
     server.sin_addr.s_addr = htonl(INADDR_ANY);
     server.sin_port = htons(port); /* The given port */
@@ -48,15 +54,18 @@ int main(int argc, char** argv) {
 
     while (1) {
         /* accept connection */
-        if ((newsock = accept ( sock , clientptr , & clientlen)) < 0) {
-            perror( "accept");
+        if ((newsock = accept ( sock , clientptr , &clientlen)) < 0) {
+            perror("accept");
             exit(EXIT_FAILURE);
         }
         Connection conn(newsock, port);
         /* Find client’s address */
-        printf(" Accepted connection \n" );
+        printf("Accepted connection \n" );
         conn.receiveDirRequest();
-        close ( newsock ); /* parent closes socket to client */
+        RequestHandler request_handler(conn);
+        request_handler.exploreHierarchy();
+        request_handler.run();
+        close(newsock); /* parent closes socket to client */
 
     }
     return 0;

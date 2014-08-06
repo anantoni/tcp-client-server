@@ -1,15 +1,24 @@
-#include "connection.h"
+#include "connection.hpp"
 
-Connection::Connection(int sock, std::string server_ip, int port, std::string dir_path) {
+Connection::Connection(int sock, std::string ip, int port, std::string path) {
     this->sock = sock;
-    this->server_ip = server_ip;
+    this->server_ip = ip;
     this->port = port;
-    this->dir_path = dir_path;
+    this->dir_path = path;
 }
 
 Connection::Connection(int sock, int port) {
     this->sock = sock;
     this->port = port;
+    this->server_ip = "127.0.0.1";
+}
+
+Connection::Connection(const Connection &conn) {
+    sock = conn.getSocket();
+    server_ip = conn.getServerIp();
+    port = conn.getPort();
+    dir_path = conn.getDirPath();
+
 }
 
 void Connection::requestDir() {
@@ -50,6 +59,7 @@ void Connection::receiveDirRequest() {
         exit(EXIT_FAILURE);
     }
     std::cout << buf << std::endl;
+    dir_path = buf;
 }
 
 int Connection::writeAll(void *buf, size_t size) {
@@ -70,4 +80,20 @@ int Connection::readAll(void *buf, size_t size) {
         }
     }
     return received;
+}
+
+std::string Connection::getDirPath() const {
+    return dir_path;
+}
+
+std::string Connection::getServerIp() const {
+    return server_ip;
+}
+
+int Connection::getPort() const {
+    return port;
+}
+
+int Connection::getSocket() const {
+    return sock;
 }

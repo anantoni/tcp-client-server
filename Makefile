@@ -7,22 +7,31 @@ default: remoteClient dataServer
 remoteClient:  client.o client_options.o connection.o 
 	$(CC) $(CFLAGS) -o remoteClient client.o client_options.o connection.o
 
-dataServer: server.o server_options.o connection.o
-	$(CC) $(CFLAGS) -o dataServer server.o server_options.o connection.o
+dataServer: server.o server_options.o connection.o request_handler.o task.o task_queue.o
+	$(CC) $(CFLAGS) -o dataServer server.o server_options.o connection.o request_handler.o task.o task_queue.o -lpthread
 
-client.o:  client.cpp client_options.h connection.h
+client.o:  client.cpp client_options.hpp connection.hpp
 	$(CC) $(CFLAGS) -c client.cpp
 
-server.o: server.cpp server_options.h connection.h
+server.o: server.cpp server_options.hpp connection.hpp
 	$(CC) $(CFLAGS) -c server.cpp
 
-client_options.o:  client_options.cpp client_options.h 
+request_handler.o: request_handler.cpp request_handler.hpp
+	$(CC) $(CFLAGS) -c request_handler.cpp
+
+task.o: task.cpp task.hpp
+	$(CC) $(CFLAGS) -c task.cpp
+
+task_queue.o: task_queue.cpp task_queue.hpp
+	$(CC) $(CFLAGS) -c task_queue.cpp
+
+client_options.o:  client_options.cpp client_options.hpp
 	$(CC) $(CFLAGS) -c client_options.cpp
 
-server_options.o: server_options.cpp server_options.h
+server_options.o: server_options.cpp server_options.hpp
 	$(CC) $(CFLAGS) -c server_options.cpp
 
-connection.o:  connection.cpp connection.h
+connection.o:  connection.cpp connection.hpp
 	$(CC) $(CFLAGS) -c connection.cpp
 
 clean: 

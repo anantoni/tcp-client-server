@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdlib>
-#include "client_options.h"
-#include "connection.h"
+#include "client_options.hpp"
+#include "connection.hpp"
 
 int main(int argc, char** argv) {
     if (argc != 7) {
@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
         perror("connect");
         exit(EXIT_FAILURE);
     }
-    std::cout << "Connecting to " << server_ip << "port " <<  port << std::endl;
+    std::cout << "Connecting to " << server_ip << " port " <<  port << std::endl;
 
     Connection conn(sock, server_ip, port, dir_path);
     conn.requestDir();

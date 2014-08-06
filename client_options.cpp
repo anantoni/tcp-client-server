@@ -1,5 +1,5 @@
-#include "client_options.h"
-#include "connection.h"
+#include "client_options.hpp"
+#include "connection.hpp"
 
 std::vector<std::string> parse_options(int argc, char** argv) {
     std::vector<std::string> args(argv + 1, argv + argc);
