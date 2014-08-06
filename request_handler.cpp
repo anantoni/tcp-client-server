@@ -66,6 +66,9 @@ void *RequestHandler::dispatch(void *arg) {
 
 void RequestHandler::handleRequest() {
     exploreHierarchy();
-    for (Task& task : pendingTasks)
+    for (Task task : pendingTasks) {
+        std::cout << "Adding " << task.getFileName() << " to queue." << std::endl;
         task_queue->addTask(task);
+    }
+
 }

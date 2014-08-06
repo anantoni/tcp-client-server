@@ -39,6 +39,11 @@ int main(int argc, char** argv) {
     server.sin_addr.s_addr = htonl(INADDR_ANY);
     server.sin_port = htons(port); /* The given port */
 
+    int option=1;
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&option, sizeof(option)) < 0) {
+        perror("setsockopt error\n");
+        return 0;
+    }
     /* Bind socket to address */
     if (bind(sock, serverptr, sizeof(server)) < 0) {
         perror("bind");
@@ -46,7 +51,7 @@ int main(int argc, char** argv) {
     }
 
     /* Listen for connections */
-    if (listen(sock, 5) < 0) {
+    if (listen(sock, 32) < 0) {
         perror("listen");
         exit(EXIT_FAILURE);
     }
@@ -63,7 +68,7 @@ int main(int argc, char** argv) {
         printf("Accepted connection \n" );
         conn.receiveDirRequest();
         RequestHandler request_handler(conn);
-        request_handler.exploreHierarchy();
+        //request_handler.exploreHierarchy();
         request_handler.run();
         close(newsock); /* parent closes socket to client */
 

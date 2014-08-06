@@ -24,7 +24,7 @@ private:
     int start;
 public:
     TaskQueue(int limit);
-    void addTask(Task &task);
+    void addTask(Task task);
     Task removeTask();
 };
 
