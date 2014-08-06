@@ -17,7 +17,12 @@ class Connection {
     int port;
     int sock;
 public:
-    Connection(std::string, int, std::string);
+    Connection(int, std::string, int, std::string);
+    Connection(int, int);
+    void requestDir();
+    void receiveDirRequest();
+    int writeAll(void*, size_t);
+    int readAll(void*, size_t);
 };
 
 #endif

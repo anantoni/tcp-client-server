@@ -8,6 +8,7 @@
 #include <stdlib.h> /* exit */
 #include <iostream>
 #include "server_options.h"
+#include "connection.h"
 
 int main(int argc, char** argv) {
     int port, sock, newsock, queue_size, pool_size;
@@ -51,10 +52,10 @@ int main(int argc, char** argv) {
             perror( "accept");
             exit(EXIT_FAILURE);
         }
-
+        Connection conn(newsock, port);
         /* Find client’s address */
         printf(" Accepted connection \n" );
-
+        conn.receiveDirRequest();
         close ( newsock ); /* parent closes socket to client */
 
     }
