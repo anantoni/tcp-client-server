@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include "client_options.hpp"
 #include "connection.hpp"
+#include "filesystem.hpp"
+
 
 int main(int argc, char** argv) {
     if (argc != 7) {
@@ -55,6 +57,7 @@ int main(int argc, char** argv) {
         }
         Connection::readAll(sock, file_name, bytes_to_read);
         std::cout << "file name: " << file_name << std::endl;
+        Filesystem::createHierarchy(strdup(file_name));
         Connection::readAll(sock, &file_size, sizeof(int));
         std::cout << "file size: " << file_size << std::endl;
 

@@ -6,8 +6,8 @@ SOURCES = client_options.cpp client.cpp server_options.cpp server.cpp connection
 
 default: remoteClient dataServer
 
-remoteClient:  client.o client_options.o connection.o 
-	$(CC) $(CFLAGS) -o remoteClient client.o client_options.o connection.o
+remoteClient:  client.o client_options.o connection.o filesystem.o 
+	$(CC) $(CFLAGS) -o remoteClient client.o client_options.o connection.o filesystem.o
 
 dataServer: server.o server_options.o connection.o request_handler.o task.o task_queue.o worker.o
 	$(CC) $(CFLAGS) -o dataServer server.o server_options.o connection.o request_handler.o task.o task_queue.o worker.o -lpthread
@@ -17,6 +17,9 @@ client.o:  client.cpp client_options.hpp connection.hpp
 
 server.o: server.cpp server_options.hpp connection.hpp
 	$(CC) $(CFLAGS) -c server.cpp
+
+filesystem.o: filesystem.cpp filesystem.hpp
+	$(CC) $(CFLAGS) -c filesystem.cpp
 
 request_handler.o: request_handler.cpp request_handler.hpp
 	$(CC) $(CFLAGS) -c request_handler.cpp
