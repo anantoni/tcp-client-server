@@ -17,12 +17,11 @@ TaskQueue::TaskQueue(int limit) {
 }
 
 void TaskQueue::addTask(Task task) {
-
     std::cout << "addTask: entering CS" << std::endl;
     pthread_mutex_lock (&task_queue_mutex);
     while (count >= pool_size) {
         std::cout << " >> Found Buffer Full" << std::endl;
-        pthread_cond_wait(& cond_nonfull , &task_queue_mutex);
+        pthread_cond_wait(&cond_nonfull , &task_queue_mutex);
     }
 
     end = (end + 1) % pool_size;
@@ -30,6 +29,7 @@ void TaskQueue::addTask(Task task) {
     task_queue[end] = task;
     std::cout << "added task" << std::endl;
     count++;
+    pthread_cond_signal(&cond_nonempty);
     pthread_mutex_unlock(&task_queue_mutex);
     std::cout << "addTask: exited CS" << std::endl;
 }
@@ -41,12 +41,13 @@ Task TaskQueue::removeTask() {
     pthread_mutex_lock(&task_queue_mutex);
     while (count <= 0) {
         printf (" >> Found Buffer Empty \n " ) ;
-        pthread_cond_wait(& cond_nonempty, &task_queue_mutex);
+        pthread_cond_wait(&cond_nonempty, &task_queue_mutex);
     }
 
     task = task_queue[start];
     start = (start + 1) % pool_size ;
     count--;
+    pthread_cond_signal(&cond_nonfull);
     pthread_mutex_unlock (&task_queue_mutex);
     std::cout << "removeTask: exited CS" << std::endl;
     return task;

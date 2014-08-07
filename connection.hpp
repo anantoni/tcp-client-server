@@ -24,8 +24,8 @@ public:
     Connection(const Connection& conn);
     void requestDir();
     void receiveDirRequest();
-    int writeAll(void*, size_t);
-    int readAll(void*, size_t);
+    static int writeAll(int fd, void* buf, size_t size);
+    static int readAll(int fd, void* buf, size_t size);
     std::string getDirPath() const;
     std::string getServerIp() const;
     int getSocket() const;

@@ -17,6 +17,7 @@ int main(int argc, char** argv) {
     struct sockaddr_in server ;
     struct sockaddr *serverptr = (struct sockaddr *) &server ;
     struct hostent *rem;
+    char* file_name;
 
     /* Create socket */
     if ((sock = socket(PF_INET , SOCK_STREAM , 0)) < 0) {
@@ -35,7 +36,7 @@ int main(int argc, char** argv) {
     server.sin_port = htons(port); /* Server port */
 
     /* Initiate connection */
-    if (connect(sock, serverptr , sizeof(server) ) < 0) {
+    if (connect(sock, serverptr, sizeof(server) ) < 0) {
         perror("connect");
         exit(EXIT_FAILURE);
     }
@@ -43,5 +44,31 @@ int main(int argc, char** argv) {
 
     Connection conn(sock, server_ip, port, dir_path);
     conn.requestDir();
+
+    while (1) {
+        int file_size, bytes_to_read;
+        Connection::readAll(sock, &bytes_to_read, sizeof(int));
+        std::cout << "waiting to read: " << bytes_to_read << " bytes" << std::endl;
+        if ((file_name = (char*)malloc(bytes_to_read)) == NULL) {
+            perror("malloc");
+            exit(EXIT_FAILURE);
+        }
+        Connection::readAll(sock, file_name, bytes_to_read);
+        std::cout << "file name: " << file_name << std::endl;
+        Connection::readAll(sock, &file_size, sizeof(int));
+        std::cout << "file size: " << file_size << std::endl;
+
+        int n = 0;
+        int pagesize = sysconf(_SC_PAGESIZE);
+        char buf[pagesize];
+        while (file_size > 0) {
+            if ((n = Connection::readAll(sock, buf,pagesize )) < 0) {
+                perror("readAll");
+                exit(EXIT_FAILURE);
+            }
+            file_size -= n;
+        }
+    }
+
     return 0;
 }

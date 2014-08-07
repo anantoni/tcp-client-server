@@ -25,7 +25,7 @@ void Connection::requestDir() {
     char *buf;
     int msg_size = dir_path.length()+1;
 
-    if (writeAll(&msg_size, sizeof(int)) == -1) {
+    if (writeAll(this->sock, &msg_size, sizeof(int)) == -1) {
         perror("send dir path length");
         exit(EXIT_FAILURE);
     }
@@ -34,7 +34,7 @@ void Connection::requestDir() {
         exit(EXIT_FAILURE);
     }
     memcpy(buf, dir_path.c_str(), dir_path.length()+1);
-    if (writeAll(buf, dir_path.length()+1) == 1) {
+    if (writeAll(this->sock, buf, dir_path.length()+1) == 1) {
         perror("send dir path");
         exit(EXIT_FAILURE);
     }
@@ -44,7 +44,7 @@ void Connection::receiveDirRequest() {
     char *buf;
     int msg_size;
 
-    if (readAll(&msg_size, sizeof(int)) == -1) {
+    if (readAll(this->sock, &msg_size, sizeof(int)) == -1) {
         perror("receive dir path");
         exit(EXIT_FAILURE);
     }
@@ -54,7 +54,7 @@ void Connection::receiveDirRequest() {
         exit(EXIT_FAILURE);
     }
 
-    if ((readAll(buf, msg_size)) == -1) {
+    if ((readAll(this->sock, buf, msg_size)) == -1) {
         perror("receive dir path");
         exit(EXIT_FAILURE);
     }
@@ -62,20 +62,20 @@ void Connection::receiveDirRequest() {
     dir_path = buf;
 }
 
-int Connection::writeAll(void *buf, size_t size) {
+int Connection::writeAll(int fd, void *buf, size_t size) {
     int sent, n;
     for(sent = 0; (unsigned int)sent < size; sent+=n) {
-        if ((n = write(this->sock, (char*)buf+sent, size-sent)) == -1) {
+        if ((n = write(fd, (char*)buf+sent, size-sent)) == -1) {
             return -1;
         }
     }
     return sent;
 }
 
-int Connection::readAll(void *buf, size_t size) {
+int Connection::readAll(int fd, void *buf, size_t size) {
     int received, n;
     for (received = 0; (unsigned int)received < size; received+=n) {
-        if ((n = read(this->sock, (char*)buf+received, size-received)) == -1) {
+        if ((n = read(fd, (char*)buf+received, size-received)) == -1) {
             return -1;
         }
     }

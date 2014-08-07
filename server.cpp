@@ -11,6 +11,7 @@
 #include "connection.hpp"
 #include "request_handler.hpp"
 #include "task_queue.hpp"
+#include "worker.hpp"
 
 TaskQueue* task_queue;
 
@@ -25,8 +26,16 @@ int main(int argc, char** argv) {
     port = argsVector.at(0);
     pool_size = argsVector.at(1);
     queue_size = argsVector.at(2);
+    Worker *workers;
 
     task_queue = new TaskQueue(queue_size);
+
+    if ((workers = (Worker *)malloc(pool_size*sizeof(Worker))) == NULL) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
+    for (int i=0; i<pool_size; i++)
+        workers[i].run();
 
     /* Create socket */
     if ((sock = socket(PF_INET, SOCK_STREAM, 0) ) < 0) {

@@ -9,8 +9,8 @@ default: remoteClient dataServer
 remoteClient:  client.o client_options.o connection.o 
 	$(CC) $(CFLAGS) -o remoteClient client.o client_options.o connection.o
 
-dataServer: server.o server_options.o connection.o request_handler.o task.o task_queue.o
-	$(CC) $(CFLAGS) -o dataServer server.o server_options.o connection.o request_handler.o task.o task_queue.o -lpthread
+dataServer: server.o server_options.o connection.o request_handler.o task.o task_queue.o worker.o
+	$(CC) $(CFLAGS) -o dataServer server.o server_options.o connection.o request_handler.o task.o task_queue.o worker.o -lpthread
 
 client.o:  client.cpp client_options.hpp connection.hpp
 	$(CC) $(CFLAGS) -c client.cpp
@@ -23,6 +23,9 @@ request_handler.o: request_handler.cpp request_handler.hpp
 
 task.o: task.cpp task.hpp
 	$(CC) $(CFLAGS) -c task.cpp
+
+worker.o: worker.cpp worker.hpp
+	$(CC) $(CFLAGS) -c worker.cpp
 
 task_queue.o: task_queue.cpp task_queue.hpp
 	$(CC) $(CFLAGS) -c task_queue.cpp

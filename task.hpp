@@ -6,16 +6,17 @@
 
 class Task {
 private:
-    std::string file_name;
+    const char* file_name;
     int sock;
     pthread_mutex_t *socket_lock;
 
 public:
     Task(){};
+    ~Task();
     Task(const Task& task);
     Task(std::string file_name, int sock, pthread_mutex_t* socket_lock);
     Task& operator=(const Task& task);
-    std::string getFileName() const;
+    const char* getFileName() const;
     int getSocket() const;
     pthread_mutex_t* getMutex() const;
 };
