@@ -14,7 +14,7 @@ public:
     Task(){};
     Task(const Task& task);
     Task(std::string file_name, int sock, pthread_mutex_t* socket_lock);
-    void operator=(const Task& task);
+    Task& operator=(const Task& task);
     std::string getFileName() const;
     int getSocket() const;
     pthread_mutex_t* getMutex() const;

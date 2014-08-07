@@ -67,10 +67,11 @@ int main(int argc, char** argv) {
         /* Find client’s address */
         printf("Accepted connection \n" );
         conn.receiveDirRequest();
-        RequestHandler request_handler(conn);
-        //request_handler.exploreHierarchy();
-        request_handler.run();
-        close(newsock); /* parent closes socket to client */
+        RequestHandler *request_handler = new RequestHandler(conn);
+        // request_handler.exploreHierarchy();
+        request_handler->run();
+        // TODO: fix memory leak
+        // close(newsock); /* parent closes socket to client */
 
     }
     return 0;

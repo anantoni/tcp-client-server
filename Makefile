@@ -1,6 +1,8 @@
-CC = g++
-CFLAGS  = -g -Wall -std=c++11
+CC     := g++
+PORT   := 8502
+CFLAGS  = -g -Wall -Wextra -std=c++11
 SOURCES = client_options.cpp client.cpp server_options.cpp server.cpp connection.cpp 
+
 
 default: remoteClient dataServer
 
@@ -39,5 +41,12 @@ clean:
 
 .PHONY: check-syntax
 check-syntax:
-	$(CC) -Wall -Wextra -std=c++11 -fsyntax-only $(SOURCES)
+	$(CC) $(CFLAGS) -fsyntax-only $(SOURCES)
 
+.PHONY: deploy
+deploy: dataServer
+	./dataServer -p $(PORT) -s 4 -q 6
+
+.PHONY: connect
+connect: remoteClient
+	./remoteClient -i 127.0.0.1 -p $(PORT) -d test

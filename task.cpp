@@ -19,10 +19,13 @@ Task::Task(const Task& task) {
     std::cout << "passed mutex pointer assign" << std::endl;
 }
 
-void Task::operator=(const Task& task) {
-    this->file_name = file_name;
-    this->sock = sock;
-    this->socket_lock = socket_lock;
+Task& Task::operator=(const Task& task) {
+    std::cout << "Copying task string" << std::endl;
+    this->file_name = task.file_name.c_str();// task.file_name;
+    std::cout << "Copied task string" << std::endl;
+    this->sock = task.sock;
+    this->socket_lock = task.socket_lock;
+    return *this;
 }
 
 std::string Task::getFileName() const {

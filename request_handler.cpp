@@ -53,14 +53,16 @@ void RequestHandler::exploreHierarchy() {
 void RequestHandler::run() {
     pthread_t producer;
 
-    if (pthread_create(&producer, NULL, dispatch, (void*) this) != 0) {
+    if (pthread_create(&producer, NULL, dispatch, (void *) this) != 0) {
         perror("Error creating thread");
         exit(EXIT_FAILURE);
     }
 }
 
 void *RequestHandler::dispatch(void *arg) {
-    ((RequestHandler *) arg)->handleRequest();
+    RequestHandler *handler = (RequestHandler *) arg;
+    handler->handleRequest();
+    // delete handler;
     return 0;
 }
 
