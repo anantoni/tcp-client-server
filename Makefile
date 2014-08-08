@@ -1,58 +1,63 @@
-CC     := g++
-PORT   := 8502
-CFLAGS  = -g -Wall -Wextra -std=c++11
-SOURCES = client_options.cpp client.cpp server_options.cpp server.cpp connection.cpp 
+CC     		:= g++
+PORT   		:= 8502
+CFLAGS  	 = -g -Wall -Wextra -std=c++11 -pedantic
+SERVER_DIR 	:= server/
+CLIENT_DIR 	:= client/
+UTILS_DIR 	:= utils/
+RM 		  	:= rm
+SOURCES = $(CLIENT_DIR)*.cpp $(SERVER_DIR)*.cpp $(UTILS_DIR)*.cpp 
 
 
-default: remoteClient dataServer
+default: $(CLIENT_DIR)remoteClient $(SERVER_DIR)dataServer
 
-remoteClient:  client.o client_options.o connection.o filesystem.o 
-	$(CC) $(CFLAGS) -o remoteClient client.o client_options.o connection.o filesystem.o
+$(CLIENT_DIR)remoteClient:  $(CLIENT_DIR)client.o $(CLIENT_DIR)client_options.o $(UTILS_DIR)connection.o $(UTILS_DIR)filesystem.o 
+	$(CC) $(CFLAGS) -o $(CLIENT_DIR)remoteClient $(CLIENT_DIR)client.o $(CLIENT_DIR)client_options.o $(UTILS_DIR)connection.o $(UTILS_DIR)filesystem.o
 
-dataServer: server.o server_options.o connection.o request_handler.o task.o task_queue.o worker.o
-	$(CC) $(CFLAGS) -o dataServer server.o server_options.o connection.o request_handler.o task.o task_queue.o worker.o -lpthread
+$(SERVER_DIR)dataServer: $(SERVER_DIR)server.o $(SERVER_DIR)server_options.o $(UTILS_DIR)connection.o $(SERVER_DIR)request_handler.o $(UTILS_DIR)task.o $(UTILS_DIR)task_queue.o $(SERVER_DIR)worker.o
+	$(CC) $(CFLAGS) -o $(SERVER_DIR)dataServer $(SERVER_DIR)server.o $(SERVER_DIR)server_options.o $(UTILS_DIR)connection.o $(SERVER_DIR)request_handler.o $(UTILS_DIR)task.o $(UTILS_DIR)task_queue.o $(SERVER_DIR)worker.o -lpthread
 
-client.o:  client.cpp client_options.hpp connection.hpp
-	$(CC) $(CFLAGS) -c client.cpp
+$(CLIENT_DIR)client.o:  $(CLIENT_DIR)client.cpp $(CLIENT_DIR)client_options.hpp $(UTILS_DIR)connection.hpp
+	$(CC) $(CFLAGS) -c $(CLIENT_DIR)client.cpp -o $(CLIENT_DIR)client.o
 
-server.o: server.cpp server_options.hpp connection.hpp
-	$(CC) $(CFLAGS) -c server.cpp
+$(SERVER_DIR)server.o: $(SERVER_DIR)server.cpp $(SERVER_DIR)server_options.hpp $(UTILS_DIR)connection.hpp
+	$(CC) $(CFLAGS) -c $(SERVER_DIR)server.cpp -o $(SERVER_DIR)server.o
 
-filesystem.o: filesystem.cpp filesystem.hpp
-	$(CC) $(CFLAGS) -c filesystem.cpp
+$(UTILS_DIR)filesystem.o: $(UTILS_DIR)filesystem.cpp $(UTILS_DIR)filesystem.hpp
+	$(CC) $(CFLAGS) -c $(UTILS_DIR)filesystem.cpp -o $(UTILS_DIR)filesystem.o
 
-request_handler.o: request_handler.cpp request_handler.hpp
-	$(CC) $(CFLAGS) -c request_handler.cpp
+$(SERVER_DIR)request_handler.o: $(SERVER_DIR)request_handler.cpp $(SERVER_DIR)request_handler.hpp
+	$(CC) $(CFLAGS) -c $(SERVER_DIR)request_handler.cpp -o $(SERVER_DIR)request_handler.o
 
-task.o: task.cpp task.hpp
-	$(CC) $(CFLAGS) -c task.cpp
+$(UTILS_DIR)task.o: $(UTILS_DIR)task.cpp $(UTILS_DIR)task.hpp
+	$(CC) $(CFLAGS) -c $(UTILS_DIR)task.cpp -o $(UTILS_DIR)task.o
 
-worker.o: worker.cpp worker.hpp
-	$(CC) $(CFLAGS) -c worker.cpp
+$(SERVER_DIR)worker.o: $(SERVER_DIR)worker.cpp $(SERVER_DIR)worker.hpp
+	$(CC) $(CFLAGS) -c $(SERVER_DIR)worker.cpp -o $(SERVER_DIR)worker.o
 
-task_queue.o: task_queue.cpp task_queue.hpp
-	$(CC) $(CFLAGS) -c task_queue.cpp
+$(UTILS_DIR)task_queue.o: $(UTILS_DIR)task_queue.cpp $(UTILS_DIR)task_queue.hpp
+	$(CC) $(CFLAGS) -c $(UTILS_DIR)task_queue.cpp -o $(UTILS_DIR)task_queue.o
 
-client_options.o:  client_options.cpp client_options.hpp
-	$(CC) $(CFLAGS) -c client_options.cpp
+$(CLIENT_DIR)client_options.o:  $(CLIENT_DIR)client_options.cpp $(CLIENT_DIR)client_options.hpp
+	$(CC) $(CFLAGS) -c $(CLIENT_DIR)client_options.cpp -o $(CLIENT_DIR)client_options.o 
 
-server_options.o: server_options.cpp server_options.hpp
-	$(CC) $(CFLAGS) -c server_options.cpp
+$(SERVER_DIR)server_options.o: $(SERVER_DIR)server_options.cpp $(SERVER_DIR)server_options.hpp
+	$(CC) $(CFLAGS) -c $(SERVER_DIR)server_options.cpp -o $(SERVER_DIR)server_options.o
 
-connection.o:  connection.cpp connection.hpp
-	$(CC) $(CFLAGS) -c connection.cpp
+$(UTILS_DIR)connection.o:  $(UTILS_DIR)connection.cpp $(UTILS_DIR)connection.hpp
+	$(CC) $(CFLAGS) -c $(UTILS_DIR)connection.cpp -o $(UTILS_DIR)connection.o
 
-clean: 
-	$(RM) count *.o *~
+.PHONY: clean 
+clean:
+	$(RM) -f  $(SERVER_DIR)*.o $(SERVER_DIR)*~ $(CLIENT_DIR)*.o $(CLIENT_DIR)*~ $(UTILS_DIR)*.o $(UTILS_DIR)*~
 
 .PHONY: check-syntax
 check-syntax:
 	$(CC) $(CFLAGS) -fsyntax-only $(SOURCES)
 
 .PHONY: deploy
-deploy: dataServer
-	./dataServer -p $(PORT) -s 4 -q 6
+deploy: $(SERVER_DIR)dataServer
+	cd server && ./dataServer -p $(PORT) -s 4 -q 6
 
 .PHONY: connect
-connect: remoteClient
-	./remoteClient -i 127.0.0.1 -p $(PORT) -d test
+connect: $(CLIENT_DIR)remoteClient
+	./$(CLIENT_DIR)remoteClient -i 127.0.0.1 -p $(PORT) -d test
