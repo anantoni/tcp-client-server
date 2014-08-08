@@ -2,31 +2,25 @@
 #include <cstdlib>
 #include "task.hpp"
 
-Task::Task(std::string file_name, int sock, pthread_mutex_t* socket_lock) {
+Task::Task(std::string file_name, int sock, pthread_mutex_t *socket_lock, Connection* conn) {
     this->file_name = strdup(file_name.c_str());
     this->sock = sock;
     this->socket_lock = socket_lock;
+    this->conn = conn;
 }
 
 Task::Task(const Task& task) {
-    std::cout << "Task copy constructor called" << std::endl;
-    std::cout << task.getFileName() << std::endl;
-    std::cout << task.getSocket() << std::endl;
-    //std::cout << *(task.getMutex()) << std::endl;
     this->file_name = strdup(task.file_name);
-    std::cout << "passed string assign" << std::endl;
-    this->sock = task.getSocket();
-    std::cout << "passed int assign" << std::endl;
-    this->socket_lock = task.getMutex();
-    std::cout << "passed mutex pointer assign" << std::endl;
+    this->sock = task.sock;
+    this->socket_lock = task.socket_lock;
+    this->conn = task.conn;
 }
 
 Task& Task::operator=(const Task& task) {
-    std::cout << "Copying task string" << std::endl;
     this->file_name = strdup(task.file_name);
-    std::cout << "Copied task string" << std::endl;
     this->sock = task.sock;
     this->socket_lock = task.socket_lock;
+    this->conn = task.conn;
     return *this;
 }
 
@@ -38,8 +32,17 @@ int Task::getSocket() const {
     return sock;
 }
 
-pthread_mutex_t* Task::getMutex() const {
+Connection* Task::getConnection() {
+    return conn;
+}
+
+pthread_mutex_t* Task::getSocketMutex() {
     return socket_lock;
+}
+
+void Task::clearResources() {
+    pthread_mutex_destroy(socket_lock);
+    close(sock);
 }
 
 Task::~Task() {

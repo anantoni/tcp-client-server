@@ -21,18 +21,23 @@ void Worker::handleTasks() {
     int fd, sock, pagesize = sysconf(_SC_PAGESIZE);
     pthread_mutex_t *socket_mutex;
     struct stat st;
-    char buf[pagesize];
+    char* buf;
+
+    if ((buf = (char*)malloc(pagesize)) == NULL) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
 
     while (1) {
         Task task = task_queue->removeTask();
-        //std::cout << "Removing " << task.getFileName() << " from queue." << std::endl;
 
         if ((fd = open(task.getFileName(), O_RDONLY, S_IREAD)) <= 0) {
             perror("open");
             exit(EXIT_FAILURE);
         }
-        socket_mutex = task.getMutex();
+        socket_mutex = task.getSocketMutex();
         sock = task.getSocket();
+        std::cout << "Locking socket mutex: " << socket_mutex << std::endl;
         pthread_mutex_lock(socket_mutex);
         std::cout << "writing to client" << std::endl;
 
@@ -61,8 +66,11 @@ void Worker::handleTasks() {
                 break;
         }
         std::cout << "wrote to client" << std::endl;
+        if (task.getConnection()->checkTransferCompletion() == 1)
+            task.clearResources();
+        std::cout << "Unlocking socket mutex: " << socket_mutex << std::endl;
         pthread_mutex_unlock(socket_mutex);
         close(fd);
-
     }
+    free(buf);
 }

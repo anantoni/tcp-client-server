@@ -1,9 +1,18 @@
 #include "request_handler.hpp"
 #include "../utils/task_queue.hpp"
+#include "../utils/connection.hpp"
 
 RequestHandler::RequestHandler(Connection &conn) {
     this->conn = conn;
-    socket_lock = PTHREAD_MUTEX_INITIALIZER ;
+    if ((socket_lock = (pthread_mutex_t*) malloc(sizeof(pthread_mutex_t))) == NULL ) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
+
+    if (pthread_mutex_init(socket_lock, NULL) != 0) {
+        perror("mutex init failed");
+        exit(EXIT_FAILURE);
+    }
 }
 
 /*
@@ -31,14 +40,12 @@ void RequestHandler::exploreHierarchy(std::string dir_path) {
 
         // If file: add file path to vector addToQueue
         if (dir_entry->d_type == isFile) {
-            Task task(dir_path + dir_entry->d_name, conn.getSocket(), &socket_lock);
-            std::cout <<"Adding file : " << dir_path + dir_entry->d_name << std::endl;
+            Task task(dir_path + dir_entry->d_name, conn.getSocket(), socket_lock, &conn);
             pendingTasks.push_back(task);
         }
 
         // If dir: avoid . and .. and recursively explore subdirectories
         else if (dir_entry->d_type == isDir) {
-            std::cout << "Found a directory: " << dir_path + dir_entry->d_name << std::endl;
             if (!strcmp(dir_entry->d_name, "..") || !strcmp(dir_entry->d_name, "."))
                 continue;
             exploreHierarchy(dir_path + dir_entry->d_name);
@@ -48,11 +55,13 @@ void RequestHandler::exploreHierarchy(std::string dir_path) {
 
 void RequestHandler::exploreHierarchy() {
     exploreHierarchy(conn.getDirPath());
+    int file_number = pendingTasks.size();
+    conn.setFileNumber(file_number);
+    Connection::writeAll(conn.getSocket(), &file_number, sizeof(int));
 }
 
 void RequestHandler::run() {
     pthread_t producer;
-
     if (pthread_create(&producer, NULL, dispatch, (void *) this) != 0) {
         perror("Error creating thread");
         exit(EXIT_FAILURE);
@@ -68,8 +77,6 @@ void *RequestHandler::dispatch(void *arg) {
 
 void RequestHandler::handleRequest() {
     exploreHierarchy();
-    for (Task task : pendingTasks) {
-        //std::cout << "Adding " << task.getFileName() << " to queue." << std::endl;
+    for (Task task : pendingTasks)
         task_queue->addTask(task);
-    }
 }

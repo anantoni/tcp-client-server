@@ -1,11 +1,11 @@
 CC     		:= g++
-PORT   		:= 8502
-CFLAGS  	 = -g -Wall -Wextra -std=c++11 -pedantic
+PORT   		:= 51000
+CFLAGS  	:= -g -Wall -Wextra -std=c++11 -pedantic
 SERVER_DIR 	:= server/
 CLIENT_DIR 	:= client/
 UTILS_DIR 	:= utils/
 RM 		  	:= rm
-SOURCES = $(CLIENT_DIR)*.cpp $(SERVER_DIR)*.cpp $(UTILS_DIR)*.cpp 
+SOURCES 	:= $(CLIENT_DIR)*.cpp $(SERVER_DIR)*.cpp $(UTILS_DIR)*.cpp 
 
 
 default: $(CLIENT_DIR)remoteClient $(SERVER_DIR)dataServer

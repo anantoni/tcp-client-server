@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
         workers[i].run();
 
     /* Create socket */
-    if ((sock = socket(PF_INET, SOCK_STREAM, 0) ) < 0) {
+    if ((sock = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
         perror("socket");
         exit(EXIT_FAILURE);
     }
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
     int option=1;
     if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&option, sizeof(option)) < 0) {
         perror("setsockopt error\n");
-        return 0;
+        exit(EXIT_FAILURE);
     }
     /* Bind socket to address */
     if (bind(sock, serverptr, sizeof(server)) < 0) {
@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
 
     while (1) {
         /* accept connection */
-        if ((newsock = accept ( sock , clientptr , &clientlen)) < 0) {
+        if ((newsock = accept(sock , clientptr , &clientlen)) < 0) {
             perror("accept");
             exit(EXIT_FAILURE);
         }
@@ -83,5 +83,6 @@ int main(int argc, char** argv) {
         // close(newsock); /* parent closes socket to client */
 
     }
+    close(sock);
     return 0;
 }

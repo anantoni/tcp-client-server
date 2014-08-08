@@ -1,5 +1,5 @@
-#ifndef CONNECTION_H
-#define CONNECTION_H
+#ifndef CONNECTION_HPP
+#define CONNECTION_HPP
 #include <sys/types.h> /* sockets */
 #include <sys/socket.h> /* sockets */
 #include <netinet/in.h> /* internet sockets */
@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <pthread.h>
 
 class Connection {
 private:
@@ -17,6 +18,8 @@ private:
     std::string dir_path;
     int port;
     int sock;
+    int file_number;
+    pthread_mutex_t file_number_lock;
 public:
     Connection(){};
     Connection(int, std::string, int, std::string);
@@ -30,6 +33,9 @@ public:
     std::string getServerIp() const;
     int getSocket() const;
     int getPort() const;
+    pthread_mutex_t *getFileMutex();
+    int checkTransferCompletion();
+    void setFileNumber(int file_number);
 };
 
 #endif

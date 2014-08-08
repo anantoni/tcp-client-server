@@ -5,20 +5,23 @@ Connection::Connection(int sock, std::string ip, int port, std::string path) {
     this->server_ip = ip;
     this->port = port;
     this->dir_path = path;
+    this->file_number = 0;
 }
 
 Connection::Connection(int sock, int port) {
     this->sock = sock;
     this->port = port;
     this->server_ip = "127.0.0.1";
+    this->file_number = 0;
 }
 
 Connection::Connection(const Connection &conn) {
-    sock = conn.getSocket();
-    server_ip = conn.getServerIp();
-    port = conn.getPort();
-    dir_path = conn.getDirPath();
-
+    this->sock = conn.sock;
+    this->server_ip = conn.server_ip;
+    this->port = conn.port;
+    this->dir_path = conn.dir_path;
+    this->file_number_lock = conn.file_number_lock;
+    this->file_number = conn.file_number;
 }
 
 void Connection::requestDir() {
@@ -45,7 +48,7 @@ void Connection::receiveDirRequest() {
     int msg_size;
 
     if (readAll(this->sock, &msg_size, sizeof(int)) == -1) {
-        perror("receive dir path");
+        perror("receive dir path length");
         exit(EXIT_FAILURE);
     }
 
@@ -96,4 +99,22 @@ int Connection::getPort() const {
 
 int Connection::getSocket() const {
     return sock;
+}
+
+pthread_mutex_t* Connection::getFileMutex() {
+    return &file_number_lock;
+}
+
+int Connection::checkTransferCompletion() {
+    file_number--;
+    std::cout << "Connection: " << this << " - Remaining files: " << file_number << std::endl;
+    if (file_number == 0) {
+        close(sock);
+        return 1;
+    }
+    return 0;
+}
+
+void Connection::setFileNumber(int file_number) {
+    this->file_number = file_number;
 }

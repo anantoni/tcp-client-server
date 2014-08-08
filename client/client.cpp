@@ -49,7 +49,10 @@ int main(int argc, char** argv) {
     Connection conn(sock, server_ip, port, dir_path);
     conn.requestDir();
 
-    while (1) {
+    int file_number;
+    Connection::readAll(sock, &file_number, sizeof(int));
+    std::cout << "Files to receive: " << file_number << std::endl;
+    while (file_number > 0) {
         int file_size, bytes_to_read;
 
         /* read filename len */
@@ -108,7 +111,8 @@ int main(int argc, char** argv) {
         }
         free(buf);
         close(fd);
+        file_number--;
     }
-
+    close(sock);
     return 0;
 }

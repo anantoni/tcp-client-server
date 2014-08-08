@@ -6,7 +6,7 @@ void Filesystem::createHierarchy(std::string file_path) {
     std::string token, path_to_dir;
     unsigned found = file_path.find_last_of("/\\");
     mode_t process_mask = umask(0);
-    mode_t mode = S_IRWXU | S_IRWXG | S_IRWXO;
+    mode_t mode = S_IRWXU; //| S_IRWXG | S_IRWXO;
 
     file_path = file_path.substr(0, found+1);
     std::cout << "Processing path: " << file_path << std::endl;
