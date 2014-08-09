@@ -58,7 +58,6 @@ Task* TaskQueue::removeTask() {
     pthread_mutex_lock(&task_queue_mutex);
     while (count <= 0) {
         if (flag == 1) {
-            std::cout << "cleaning" << std::endl;
             pthread_mutex_unlock(&task_queue_mutex);
             return NULL;
         }

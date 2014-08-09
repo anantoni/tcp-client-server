@@ -41,12 +41,16 @@ int main(int argc, char** argv) {
     pool_size = argsVector.at(1);
     queue_size = argsVector.at(2);
 
-    task_queue = new TaskQueue(queue_size);
-
-    if ((workers = new Worker[pool_size]) == NULL) {
+    if ((task_queue = new TaskQueue(queue_size)) == NULL) {
         perror("new");
         exit(EXIT_FAILURE);
     }
+
+    if ((workers = new Worker[pool_size]) == NULL) {
+        perror("new[]");
+        exit(EXIT_FAILURE);
+    }
+
     for (int i=0; i<pool_size; i++)
         workers[i].run();
 
@@ -56,14 +60,14 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
-    std::cout << "socket: " << sock << std::endl;
     server.sin_family = AF_INET; /* Internet domain */
     server.sin_addr.s_addr = htonl(INADDR_ANY);
     server.sin_port = htons(port); /* The given port */
 
     int option=1;
+    /* set socket options */
     if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&option, sizeof(option)) < 0) {
-        perror("setsockopt error\n");
+        perror("setsockopt error");
         exit(EXIT_FAILURE);
     }
     /* Bind socket to address */
@@ -87,7 +91,7 @@ int main(int argc, char** argv) {
         }
         Connection conn(newsock, port);
         /* Find client’s address */
-        printf("Accepted connection \n" );
+        printf("Accepted connection" );
         conn.receiveDirRequest();
         RequestHandler *request_handler = new RequestHandler(conn);
         request_handler->run();

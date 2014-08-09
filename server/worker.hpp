@@ -9,6 +9,7 @@
 
 class Worker {
 public:
+    ~Worker();
     static void *dispatch(void*);
     void handleTasks();
     void run();

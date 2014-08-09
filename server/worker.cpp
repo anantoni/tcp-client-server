@@ -5,6 +5,10 @@
 
 pthread_t Worker::consumer;
 
+Worker::~Worker() {
+    std::cout << "Deleting worker" << std::endl;
+}
+
 void Worker::run() {
     if (pthread_create(&consumer, NULL, dispatch, (void*) this) != 0) {
         perror("Error creating thread");
@@ -19,7 +23,7 @@ void Worker::run() {
 void* Worker::dispatch(void *arg) {
     Worker *worker = (Worker *) arg;
     worker->handleTasks();
-    delete worker;
+    //delete worker;
     return 0;
 }
 
@@ -29,6 +33,7 @@ void Worker::handleTasks() {
     struct stat st;
     char* buf;
 
+    /* allocate buffer of pagesize bytes to read from file */
     if ((buf = (char*)malloc(pagesize)) == NULL) {
         perror("malloc");
         exit(EXIT_FAILURE);
@@ -36,8 +41,11 @@ void Worker::handleTasks() {
 
     while (1) {
         Task *task = task_queue->removeTask();
+        /* if task* returned points to NULL terminate thread */
         if (task == NULL)
             break;
+
+        /* open file to read its contents */
         if ((fd = open(task->getFileName(), O_RDONLY, S_IREAD)) <= 0) {
             perror("open");
             exit(EXIT_FAILURE);
