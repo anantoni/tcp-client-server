@@ -9,29 +9,42 @@
 #include <iostream>
 #include "../utils/connection.hpp"
 #include "../utils/task_queue.hpp"
+#include "../utils/signal_handler.hpp"
 #include "request_handler.hpp"
 #include "worker.hpp"
 #include "server_options.hpp"
 
 TaskQueue* task_queue;
+Worker* workers;
+volatile sig_atomic_t flag = 0;
+int sock, pool_size;
 
 int main(int argc, char** argv) {
-    int port, sock, newsock, queue_size, pool_size;
+    int port, newsock, queue_size;
     struct sockaddr_in server, client;
     socklen_t clientlen;
     struct sockaddr *serverptr = (struct sockaddr *) &server;
     struct sockaddr *clientptr = (struct sockaddr *) &client;
+    struct sigaction new_action, old_action;
+
+    /* Set up the structure to specify the new action. */
+    new_action.sa_handler = termination_handler;
+    sigemptyset (&new_action.sa_mask);
+    new_action.sa_flags = 0;
+
+    sigaction (SIGINT, NULL, &old_action);
+    if (old_action.sa_handler != SIG_IGN)
+        sigaction (SIGINT, &new_action, NULL);
 
     std::vector<int> argsVector = parse_options(argc, argv);
     port = argsVector.at(0);
     pool_size = argsVector.at(1);
     queue_size = argsVector.at(2);
-    Worker *workers;
 
     task_queue = new TaskQueue(queue_size);
 
-    if ((workers = (Worker *)malloc(pool_size*sizeof(Worker))) == NULL) {
-        perror("malloc");
+    if ((workers = new Worker[pool_size]) == NULL) {
+        perror("new");
         exit(EXIT_FAILURE);
     }
     for (int i=0; i<pool_size; i++)
@@ -77,12 +90,7 @@ int main(int argc, char** argv) {
         printf("Accepted connection \n" );
         conn.receiveDirRequest();
         RequestHandler *request_handler = new RequestHandler(conn);
-        // request_handler.exploreHierarchy();
         request_handler->run();
-        // TODO: fix memory leak
-        // close(newsock); /* parent closes socket to client */
-
     }
-    close(sock);
     return 0;
 }

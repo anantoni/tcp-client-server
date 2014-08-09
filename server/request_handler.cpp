@@ -1,6 +1,7 @@
 #include "request_handler.hpp"
 #include "../utils/task_queue.hpp"
 #include "../utils/connection.hpp"
+#include "../utils/signal_handler.hpp"
 
 RequestHandler::RequestHandler(Connection &conn) {
     this->conn = conn;
@@ -30,7 +31,6 @@ void RequestHandler::exploreHierarchy(std::string dir_path) {
     if (dir_path.back() != '/')
         dir_path.push_back('/');
 
-    std::cout << dir_path << std::endl;
     if ((ent = opendir(dir_path.c_str())) == NULL) {
         perror("opendir");
         exit(EXIT_FAILURE);
@@ -40,7 +40,7 @@ void RequestHandler::exploreHierarchy(std::string dir_path) {
 
         // If file: add file path to vector addToQueue
         if (dir_entry->d_type == isFile) {
-            Task task(dir_path + dir_entry->d_name, conn.getSocket(), socket_lock, &conn);
+            Task* task = new Task(dir_path + dir_entry->d_name, conn.getSocket(), socket_lock, &conn);
             pendingTasks.push_back(task);
         }
 
@@ -82,6 +82,6 @@ void *RequestHandler::dispatch(void *arg) {
 
 void RequestHandler::handleRequest() {
     exploreHierarchy();
-    for (Task task : pendingTasks)
+    for (Task* task : pendingTasks)
         task_queue->addTask(task);
 }

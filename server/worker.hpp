@@ -5,12 +5,14 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <pthread.h>
 
 class Worker {
 public:
     static void *dispatch(void*);
     void handleTasks();
     void run();
+    static pthread_t consumer;
 };
 
 #endif

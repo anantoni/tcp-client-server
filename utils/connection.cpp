@@ -41,6 +41,7 @@ void Connection::requestDir() {
         perror("send dir path");
         exit(EXIT_FAILURE);
     }
+    free(buf);
 }
 
 void Connection::receiveDirRequest() {
@@ -61,27 +62,25 @@ void Connection::receiveDirRequest() {
         perror("receive dir path");
         exit(EXIT_FAILURE);
     }
-    std::cout << buf << std::endl;
     dir_path = buf;
+    free(buf);
 }
 
 int Connection::writeAll(int fd, void *buf, size_t size) {
     int sent, n;
-    for(sent = 0; (unsigned int)sent < size; sent+=n) {
-        if ((n = write(fd, (char*)buf+sent, size-sent)) == -1) {
+    for(sent = 0; (unsigned int)sent < size; sent+=n)
+        if ((n = write(fd, (char*)buf+sent, size-sent)) == -1)
             return -1;
-        }
-    }
+
     return sent;
 }
 
 int Connection::readAll(int fd, void *buf, size_t size) {
     int received, n;
-    for (received = 0; (unsigned int)received < size; received+=n) {
-        if ((n = read(fd, (char*)buf+received, size-received)) == -1) {
+    for (received = 0; (unsigned int)received < size; received+=n)
+        if ((n = read(fd, (char*)buf+received, size-received)) == -1)
             return -1;
-        }
-    }
+
     return received;
 }
 

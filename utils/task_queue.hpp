@@ -1,5 +1,5 @@
-#ifndef TASKQUEUE_H
-#define TASKQUEUE_H
+#ifndef TASKQUEUE_HPP
+#define TASKQUEUE_HPP
 
 #include <vector>
 #include <cstdlib>
@@ -10,22 +10,22 @@
 
 class TaskQueue;
 
-extern TaskQueue* task_queue;
-
 class TaskQueue {
 private:
     pthread_mutex_t task_queue_mutex;
     pthread_cond_t cond_nonempty;
     pthread_cond_t cond_nonfull;
-    Task* task_queue;
+    Task** task_queue;
     int pool_size;
     int count;
     int end;
     int start;
 public:
     TaskQueue(int limit);
-    void addTask(Task task);
-    Task removeTask();
+    ~TaskQueue();
+    void addTask(Task* task);
+    void broadcastToTerminate();
+    Task* removeTask();
 };
 
 #endif

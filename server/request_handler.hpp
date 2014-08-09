@@ -14,7 +14,7 @@ class RequestHandler {
 private:
     pthread_mutex_t *socket_lock;
     Connection conn;
-    std::vector<Task> pendingTasks;
+    std::vector<Task*> pendingTasks;
 public:
     static void *dispatch(void *);
     RequestHandler(Connection&);

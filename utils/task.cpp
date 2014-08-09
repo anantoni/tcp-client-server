@@ -46,5 +46,5 @@ void Task::clearResources() {
 }
 
 Task::~Task() {
-    free((void *) file_name);
+    free((void*)file_name);
 }

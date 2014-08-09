@@ -1,12 +1,17 @@
 #include "worker.hpp"
 #include "../utils/connection.hpp"
 #include "../utils/task_queue.hpp"
+#include "../utils/signal_handler.hpp"
+
+pthread_t Worker::consumer;
 
 void Worker::run() {
-    pthread_t consumer;
-
     if (pthread_create(&consumer, NULL, dispatch, (void*) this) != 0) {
         perror("Error creating thread");
+        exit(EXIT_FAILURE);
+    }
+    if (pthread_detach(consumer) != 0) {
+        perror("Thread detach");
         exit(EXIT_FAILURE);
     }
 }
@@ -14,6 +19,7 @@ void Worker::run() {
 void* Worker::dispatch(void *arg) {
     Worker *worker = (Worker *) arg;
     worker->handleTasks();
+    delete worker;
     return 0;
 }
 
@@ -29,26 +35,30 @@ void Worker::handleTasks() {
     }
 
     while (1) {
-        Task task = task_queue->removeTask();
-
-        if ((fd = open(task.getFileName(), O_RDONLY, S_IREAD)) <= 0) {
+        Task *task = task_queue->removeTask();
+        if (task == NULL)
+            break;
+        if ((fd = open(task->getFileName(), O_RDONLY, S_IREAD)) <= 0) {
             perror("open");
             exit(EXIT_FAILURE);
         }
-        socket_mutex = task.getSocketMutex();
-        sock = task.getSocket();
-        std::cout << "Locking socket mutex: " << socket_mutex << std::endl;
-        pthread_mutex_lock(socket_mutex);
-        std::cout << "writing to client" << std::endl;
+        /* obtain the mutex and socket fd corresponding to the task */
+        socket_mutex = task->getSocketMutex();
+        sock = task->getSocket();
 
-        int filename_len = strlen(task.getFileName()) + 1;
+        /* enter critical section */
+        pthread_mutex_lock(socket_mutex);
+        std::cout << "Tread: " << pthread_self() << " writing to client" << std::endl;
+        int filename_len = strlen(task->getFileName()) + 1;
         filename_len = htonl(filename_len);
+
+        /* send filename length */
         Connection::writeAll(sock, &filename_len, sizeof(int));
-        std::cout << "wrote filename len " << filename_len << std::endl;
-        Connection::writeAll(sock, (void *) task.getFileName(), strlen(task.getFileName())+1);
-        stat(task.getFileName(), &st);
-        std::cout << st.st_size << std::endl;
+        /* send filename */
+        Connection::writeAll(sock, (void *) task->getFileName(), strlen(task->getFileName())+1);
+        stat(task->getFileName(), &st);
         int file_size = htonl(st.st_size);
+        /* send file size */
         Connection::writeAll(sock, &file_size, sizeof(int));
 
         int read_from_file = 0;
@@ -58,7 +68,7 @@ void Worker::handleTasks() {
                 perror("read");
                 exit(EXIT_FAILURE);
             }
-            std::cout << "Sending " << n << " bytes to client" << std::endl;
+            /* send n bytes to client */
             if (n > 0)
                 Connection::writeAll(sock, buf, n);
 
@@ -66,12 +76,15 @@ void Worker::handleTasks() {
             if (read_from_file == st.st_size)
                 break;
         }
-        std::cout << "wrote to client" << std::endl;
-        if (task.getConnection()->checkTransferCompletion() == 1)
-            task.clearResources();
-        std::cout << "Unlocking socket mutex: " << socket_mutex << std::endl;
+        /* check if transfer is complete in order to terminate communication */
+        if (task->getConnection()->checkTransferCompletion() == 1)
+            task->clearResources();
         pthread_mutex_unlock(socket_mutex);
+        /* exited critical section */
         close(fd);
+        free(task);
     }
+    std::cout << "Thread: " << pthread_self() << " freeing buf" << std::endl;
     free(buf);
+    std::cout << "Worker thread terminating" << std::endl;
 }

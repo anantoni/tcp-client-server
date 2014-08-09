@@ -1,5 +1,5 @@
 CC     		:= g++
-PORT   		:= 51000
+PORT   		:= 51001
 CFLAGS  	:= -g -Wall -Wextra -std=c++11 -pedantic
 SERVER_DIR 	:= server/
 CLIENT_DIR 	:= client/
@@ -13,8 +13,8 @@ default: $(CLIENT_DIR)remoteClient $(SERVER_DIR)dataServer
 $(CLIENT_DIR)remoteClient:  $(CLIENT_DIR)client.o $(CLIENT_DIR)client_options.o $(UTILS_DIR)connection.o $(UTILS_DIR)filesystem.o 
 	$(CC) $(CFLAGS) -o $(CLIENT_DIR)remoteClient $(CLIENT_DIR)client.o $(CLIENT_DIR)client_options.o $(UTILS_DIR)connection.o $(UTILS_DIR)filesystem.o
 
-$(SERVER_DIR)dataServer: $(SERVER_DIR)server.o $(SERVER_DIR)server_options.o $(UTILS_DIR)connection.o $(SERVER_DIR)request_handler.o $(UTILS_DIR)task.o $(UTILS_DIR)task_queue.o $(SERVER_DIR)worker.o
-	$(CC) $(CFLAGS) -o $(SERVER_DIR)dataServer $(SERVER_DIR)server.o $(SERVER_DIR)server_options.o $(UTILS_DIR)connection.o $(SERVER_DIR)request_handler.o $(UTILS_DIR)task.o $(UTILS_DIR)task_queue.o $(SERVER_DIR)worker.o -lpthread
+$(SERVER_DIR)dataServer: $(SERVER_DIR)server.o $(SERVER_DIR)server_options.o $(UTILS_DIR)connection.o $(SERVER_DIR)request_handler.o $(UTILS_DIR)task.o $(UTILS_DIR)task_queue.o $(SERVER_DIR)worker.o $(UTILS_DIR)signal_handler.o
+	$(CC) $(CFLAGS) -o $(SERVER_DIR)dataServer $(SERVER_DIR)server.o $(SERVER_DIR)server_options.o $(UTILS_DIR)connection.o $(SERVER_DIR)request_handler.o $(UTILS_DIR)task.o $(UTILS_DIR)task_queue.o $(SERVER_DIR)worker.o $(UTILS_DIR)signal_handler.o -lpthread
 
 $(CLIENT_DIR)client.o:  $(CLIENT_DIR)client.cpp $(CLIENT_DIR)client_options.hpp $(UTILS_DIR)connection.hpp
 	$(CC) $(CFLAGS) -c $(CLIENT_DIR)client.cpp -o $(CLIENT_DIR)client.o
@@ -30,6 +30,9 @@ $(SERVER_DIR)request_handler.o: $(SERVER_DIR)request_handler.cpp $(SERVER_DIR)re
 
 $(UTILS_DIR)task.o: $(UTILS_DIR)task.cpp $(UTILS_DIR)task.hpp
 	$(CC) $(CFLAGS) -c $(UTILS_DIR)task.cpp -o $(UTILS_DIR)task.o
+
+$(UTILS_DIR)signal_handler.o: $(UTILS_DIR)signal_handler.cpp $(UTILS_DIR)signal_handler.hpp
+	$(CC) $(CFLAGSF) -c $(UTILS_DIR)signal_handler.cpp -o $(UTILS_DIR)signal_handler.o
 
 $(SERVER_DIR)worker.o: $(SERVER_DIR)worker.cpp $(SERVER_DIR)worker.hpp
 	$(CC) $(CFLAGS) -c $(SERVER_DIR)worker.cpp -o $(SERVER_DIR)worker.o
@@ -61,3 +64,7 @@ deploy: $(SERVER_DIR)dataServer
 .PHONY: connect
 connect: $(CLIENT_DIR)remoteClient
 	./$(CLIENT_DIR)remoteClient -i 127.0.0.1 -p $(PORT) -d test
+
+.PHONY: connect1
+connect1: $(CLIENT_DIR)remoteClient
+	./$(CLIENT_DIR)remoteClient -i 127.0.0.1 -p $(PORT) -d /home/anantoni/ta/my_syspro/tcp-client-server/test
