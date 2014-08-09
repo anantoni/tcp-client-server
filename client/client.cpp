@@ -51,12 +51,14 @@ int main(int argc, char** argv) {
 
     int file_number;
     Connection::readAll(sock, &file_number, sizeof(int));
+    file_number = ntohl(file_number);
     std::cout << "Files to receive: " << file_number << std::endl;
     while (file_number > 0) {
         int file_size, bytes_to_read;
 
         /* read filename len */
         Connection::readAll(sock, &bytes_to_read, sizeof(int));
+        bytes_to_read = ntohl(bytes_to_read);
         std::cout << "waiting to read: " << bytes_to_read << " bytes" << std::endl;
 
         if ((file_name = (char*)malloc(bytes_to_read)) == NULL) {
@@ -72,6 +74,7 @@ int main(int argc, char** argv) {
 
         /* read file size (int) */
         Connection::readAll(sock, &file_size, sizeof(int));
+        file_size = ntohl(file_size);
         std::cout << "file size: " << file_size << std::endl;
 
         int n = 0, pagesize = sysconf(_SC_PAGESIZE), fd;

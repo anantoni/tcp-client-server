@@ -57,6 +57,7 @@ void RequestHandler::exploreHierarchy() {
     exploreHierarchy(conn.getDirPath());
     int file_number = pendingTasks.size();
     conn.setFileNumber(file_number);
+    file_number = htonl(file_number);
     Connection::writeAll(conn.getSocket(), &file_number, sizeof(int));
 }
 
@@ -75,7 +76,7 @@ void RequestHandler::run() {
 void *RequestHandler::dispatch(void *arg) {
     RequestHandler *handler = (RequestHandler *) arg;
     handler->handleRequest();
-    //delete handler;
+    delete handler;
     return 0;
 }
 

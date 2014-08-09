@@ -42,13 +42,14 @@ void Worker::handleTasks() {
         std::cout << "writing to client" << std::endl;
 
         int filename_len = strlen(task.getFileName()) + 1;
-
+        filename_len = htonl(filename_len);
         Connection::writeAll(sock, &filename_len, sizeof(int));
         std::cout << "wrote filename len " << filename_len << std::endl;
         Connection::writeAll(sock, (void *) task.getFileName(), strlen(task.getFileName())+1);
         stat(task.getFileName(), &st);
         std::cout << st.st_size << std::endl;
-        Connection::writeAll(sock, &st.st_size, sizeof(int));
+        int file_size = htonl(st.st_size);
+        Connection::writeAll(sock, &file_size, sizeof(int));
 
         int read_from_file = 0;
         int n = 0;
