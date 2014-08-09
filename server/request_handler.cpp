@@ -66,12 +66,16 @@ void RequestHandler::run() {
         perror("Error creating thread");
         exit(EXIT_FAILURE);
     }
+    if (pthread_detach(producer) != 0) {
+        perror("Thread detach");
+        exit(EXIT_FAILURE);
+    }
 }
 
 void *RequestHandler::dispatch(void *arg) {
     RequestHandler *handler = (RequestHandler *) arg;
     handler->handleRequest();
-    // delete handler;
+    //delete handler;
     return 0;
 }
 
