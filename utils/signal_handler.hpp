@@ -6,7 +6,7 @@
 #include "task_queue.hpp"
 
 extern volatile sig_atomic_t flag;
-extern Worker* workers;
+extern Worker** workers;
 extern int sock;
 extern int pool_size;
 extern TaskQueue* task_queue;

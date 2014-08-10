@@ -15,7 +15,7 @@
 #include "server_options.hpp"
 
 TaskQueue* task_queue;
-Worker* workers;
+Worker** workers;
 volatile sig_atomic_t flag = 0;
 int sock, pool_size;
 
@@ -46,13 +46,18 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
-    if ((workers = new Worker[pool_size]) == NULL) {
-        perror("new[]");
+    if ((workers = (Worker**)malloc(pool_size*sizeof(Worker*))) == NULL) {
+        perror("malloc[]");
         exit(EXIT_FAILURE);
     }
 
-    for (int i=0; i<pool_size; i++)
-        workers[i].run();
+    for (int i=0; i<pool_size; i++) {
+        if ((workers[i] = new Worker) == NULL ) {
+            perror("new");
+            exit(EXIT_FAILURE);
+        }
+        workers[i]->run();
+    }
 
     /* Create socket */
     if ((sock = socket(PF_INET, SOCK_STREAM, 0)) < 0) {

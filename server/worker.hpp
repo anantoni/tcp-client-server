@@ -8,6 +8,8 @@
 #include <pthread.h>
 
 class Worker {
+private:
+    int id;
 public:
     ~Worker();
     static void *dispatch(void*);

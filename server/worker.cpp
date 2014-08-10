@@ -6,10 +6,11 @@
 pthread_t Worker::consumer;
 
 Worker::~Worker() {
-    std::cout << "Deleting worker" << std::endl;
+    std::cout << "Deleting worker " << id << std::endl;
 }
 
 void Worker::run() {
+    id = 1;
     if (pthread_create(&consumer, NULL, dispatch, (void*) this) != 0) {
         perror("Error creating thread");
         exit(EXIT_FAILURE);
